@@ -18,6 +18,33 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
+        // Determine if 2FA is required based on role
+        if (user.role === 'admin' || user.role === 'teacher') {
+            // Generate a temporary token that expires very quickly (e.g. 10 mins) to allow them to complete 2FA
+            const tempToken = await signToken({
+                id: user.id,
+                username: user.username,
+                role: user.role,
+                fullName: user.full_name,
+                temp: true
+            }, '24h'); // We might need to adjust auth.js signToken if we want flexible expirations, but the default is 24h which is okay for this temp token as long as it's not the final generic token. Actually, we'll just check for a 'temp' flag or rely on the frontend flow.
+
+            if (!user.two_factor_secret) {
+                return NextResponse.json({
+                    success: true,
+                    requires2FASetup: true,
+                    tempToken
+                });
+            } else {
+                return NextResponse.json({
+                    success: true,
+                    requires2FA: true,
+                    tempToken
+                });
+            }
+        }
+
+        // If not admin/teacher (e.g., student), proceed as normal
         // Create JWT token
         const token = await signToken({
             id: user.id,

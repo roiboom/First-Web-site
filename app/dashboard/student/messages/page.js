@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { MessageSquare, Mail, MailOpen } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function StudentMessages() {
+    const { t } = useLanguage();
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedMsg, setSelectedMsg] = useState(null);
@@ -25,13 +27,13 @@ export default function StudentMessages() {
     const unread = messages.filter(m => !m.is_read).length;
 
     return (
-        <div>
+        <div className="animate-fade-in">
             <div className="card" style={{ padding: '16px 20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <MessageSquare size={20} color="#3b82f6" /> Messages
+                    <MessageSquare size={20} color="#3b82f6" /> {t.messages_page.title}
                 </h3>
                 {unread > 0 && (
-                    <span className="badge badge-danger">{unread} unread</span>
+                    <span className="badge badge-danger">{unread} {t.student_dashboard.unreadMessages}</span>
                 )}
             </div>
 

@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit3, Trash2, X, UserPlus, Download, Eye, EyeOff } from 'lucide-react';
+import { Search, Plus, Edit3, Trash2, X, UserPlus, Download, Eye, EyeOff, Filter } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function AdminStudents() {
+    const { t } = useLanguage();
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -67,84 +69,96 @@ export default function AdminStudents() {
         fetchStudents();
     };
 
+    if (loading) return <div className="loading-page"><div className="spinner" /></div>;
+
     return (
-        <div>
-            {/* Toolbar */}
-            <div className="card" style={{ padding: '16px 20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', gap: '10px', flex: 1, minWidth: '200px' }}>
-                    <div style={{ position: 'relative', flex: 1, maxWidth: '300px' }}>
-                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                        <input
-                            placeholder="Search students..."
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            style={{ paddingLeft: '38px' }}
-                        />
-                    </div>
-                    <select value={classFilter} onChange={e => setClassFilter(e.target.value)} style={{ maxWidth: '140px' }}>
-                        <option value="">All Classes</option>
+        <div className="animate-fade-in">
+            <div style={styles.header}>
+                <div>
+                    <h1 style={styles.title}>{t.students_page.title}</h1>
+                    <p style={styles.subtitle}>{t.students_page.subtitle}</p>
+                </div>
+                <div style={styles.actions}>
+                    <button className="btn btn-outline">
+                        <Download size={18} /> {t.students_page.exportData}
+                    </button>
+                    <button className="btn btn-primary" onClick={openAdd}>
+                        <UserPlus size={18} /> {t.students_page.addStudent}
+                    </button>
+                </div>
+            </div>
+
+            <div className="card" style={styles.filtersCard}>
+                <div style={styles.searchBox}>
+                    <Search size={18} color="var(--text-muted)" />
+                    <input
+                        type="text"
+                        placeholder={t.common.search}
+                        style={styles.searchInput}
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
+                </div>
+                <div style={styles.filterGroup}>
+                    <button className="btn btn-outline" style={{ padding: '8px 12px' }}>
+                        <Filter size={16} /> {t.students_page.filters}
+                    </button>
+                    <select style={styles.select} value={classFilter} onChange={e => setClassFilter(e.target.value)}>
+                        <option value="">{t.students_page.allClasses}</option>
                         <option value="Class A">Class A</option>
                         <option value="Class B">Class B</option>
                     </select>
+                    <select style={styles.select}>
+                        <option>{t.students_page.allStatuses}</option>
+                        <option>{t.students_page.active}</option>
+                        <option>{t.students_page.inactive}</option>
+                    </select>
                 </div>
-                <button className="btn btn-primary" onClick={openAdd}>
-                    <Plus size={18} /> Add Student
-                </button>
             </div>
 
-            {/* Students Table */}
-            <div className="card">
-                <div className="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Class</th>
-                                <th>Gender</th>
-                                <th>Parent</th>
-                                <th>Actions</th>
+            <div className="card table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>{t.students_page.tableStudent}</th>
+                            <th>{t.dashboard.id}</th>
+                            <th>{t.students_page.tableClass}</th>
+                            <th>{t.students_page.tableStatus}</th>
+                            <th style={{ textAlign: 'right' }}>{t.common.actions}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {students.map((student, i) => (
+                            <tr key={student.id} className="stagger" style={{ animationDelay: `${i * 0.05}s` }}>
+                                <td>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={styles.avatar}>
+                                            {(student.full_name || 'U')[0].toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{student.full_name}</div>
+                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{student.email || 'student@school.edu'}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span className="badge badge-primary">{student.student_id}</span></td>
+                                <td>{student.class_name || 'Unassigned'}</td>
+                                <td>
+                                    <span className="badge" style={{ background: '#dcfce7', color: '#166534' }}>{t.students_page.active}</span>
+                                </td>
+                                <td style={{ textAlign: 'right' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                        <button style={styles.iconBtn} onClick={() => openEdit(student)} title={t.students_page.edit}><Edit3 size={16} /></button>
+                                        <button style={{ ...styles.iconBtn, color: '#ef4444', borderColor: '#fca5a5' }} onClick={() => handleDelete(student.id)} title="Delete"><Trash2 size={16} /></button>
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {students.map(s => (
-                                <tr key={s.student_id}>
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #3b82f6, #60a5fa)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.85rem', flexShrink: 0 }}>
-                                                {s.full_name?.[0]}
-                                            </div>
-                                            <div>
-                                                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.full_name}</div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.email}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span className="badge badge-primary">{s.student_id}</span></td>
-                                    <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{s.username}</td>
-                                    <td><span className="badge badge-purple">{s.class_name}</span></td>
-                                    <td>{s.gender || '-'}</td>
-                                    <td>{s.parent_name || '-'}</td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: '6px' }}>
-                                            <button className="btn btn-outline btn-sm btn-icon" onClick={() => openEdit(s)} title="Edit">
-                                                <Edit3 size={15} />
-                                            </button>
-                                            <button className="btn btn-sm btn-icon" onClick={() => handleDelete(s.id)} title="Delete"
-                                                style={{ background: 'var(--danger-50)', color: 'var(--danger-500)', border: '1px solid var(--danger-100)' }}>
-                                                <Trash2 size={15} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {students.length === 0 && (
-                                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No students found</td></tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                        ))}
+                        {students.length === 0 && (
+                            <tr><td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No students found</td></tr>
+                        )}
+                    </tbody>
+                </table>
             </div>
 
             {/* Add/Edit Modal */}
@@ -152,7 +166,7 @@ export default function AdminStudents() {
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3>{editStudent ? 'Edit Student' : 'Add New Student'}</h3>
+                            <h3>{editStudent ? t.students_page.edit : t.students_page.addStudent}</h3>
                             <button className="btn btn-icon btn-outline" onClick={() => setShowModal(false)}><X size={18} /></button>
                         </div>
                         {newCreds ? (
@@ -222,8 +236,8 @@ export default function AdminStudents() {
                                     </div>
                                 </div>
                                 <div className="modal-footer">
-                                    <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button>
-                                    <button type="submit" className="btn btn-primary">{editStudent ? 'Save Changes' : 'Create Student'}</button>
+                                    <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>{t.messages_page.cancel}</button>
+                                    <button type="submit" className="btn btn-primary">{editStudent ? t.students_page.edit : t.students_page.addStudent}</button>
                                 </div>
                             </form>
                         )}
@@ -233,3 +247,94 @@ export default function AdminStudents() {
         </div>
     );
 }
+
+const styles = {
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '24px',
+        flexWrap: 'wrap',
+        gap: '16px',
+    },
+    title: {
+        fontSize: '1.5rem',
+        fontWeight: 700,
+        color: 'var(--text-primary)',
+        marginBottom: '4px',
+    },
+    subtitle: {
+        color: 'var(--text-muted)',
+        fontSize: '0.9rem',
+    },
+    actions: {
+        display: 'flex',
+        gap: '12px',
+    },
+    filtersCard: {
+        padding: '16px',
+        marginBottom: '24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px',
+    },
+    searchBox: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        background: 'var(--bg-secondary)',
+        padding: '8px 16px',
+        borderRadius: '10px',
+        flex: '1 1 300px',
+        border: '1px solid var(--border-color)',
+    },
+    searchInput: {
+        border: 'none',
+        background: 'transparent',
+        outline: 'none',
+        width: '100%',
+        color: 'var(--text-primary)',
+        fontSize: '0.9rem',
+    },
+    filterGroup: {
+        display: 'flex',
+        gap: '12px',
+        flexWrap: 'wrap',
+    },
+    select: {
+        padding: '8px 36px 8px 16px',
+        borderRadius: '8px',
+        border: '1px solid var(--border-color)',
+        background: 'var(--bg-secondary)',
+        color: 'var(--text-primary)',
+        outline: 'none',
+        appearance: 'none',
+        cursor: 'pointer',
+    },
+    avatar: {
+        width: '36px',
+        height: '36px',
+        borderRadius: '10px',
+        background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 600,
+        fontSize: '1rem',
+    },
+    iconBtn: {
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '8px',
+        width: '32px',
+        height: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--text-secondary)',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+    }
+};

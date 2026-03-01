@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Send, MessageSquare } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function TeacherMessages() {
+    const { t } = useLanguage();
     const [messages, setMessages] = useState([]);
     const [students, setStudents] = useState([]);
     const [showCompose, setShowCompose] = useState(false);
@@ -33,13 +35,13 @@ export default function TeacherMessages() {
     };
 
     return (
-        <div>
+        <div className="animate-fade-in">
             <div className="card" style={{ padding: '16px 20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <MessageSquare size={20} color="#3b82f6" /> Messages
+                    <MessageSquare size={20} color="#3b82f6" /> {t.messages_page.title}
                 </h3>
                 <button className="btn btn-primary" onClick={() => setShowCompose(!showCompose)}>
-                    <Send size={18} /> Send Message
+                    <Send size={18} /> {t.messages_page.newMessage}
                 </button>
             </div>
 
@@ -47,23 +49,23 @@ export default function TeacherMessages() {
                 <div className="card" style={{ padding: '24px', marginBottom: '20px' }}>
                     <form onSubmit={handleSend}>
                         <div className="form-group">
-                            <label>Send To</label>
+                            <label>{t.messages_page.to}</label>
                             <select value={form.recipientId} onChange={e => setForm({ ...form, recipientId: e.target.value })}>
-                                <option value="">All Students (Announcement)</option>
+                                <option value="">{t.students_page.allClasses} (Announcement)</option>
                                 {students.map(s => <option key={s.userId} value={s.userId}>{s.full_name}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
-                            <label>Subject</label>
-                            <input required value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} placeholder="Subject" />
+                            <label>{t.messages_page.subject}</label>
+                            <input required value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} placeholder={t.messages_page.subject} />
                         </div>
                         <div className="form-group">
-                            <label>Message</label>
-                            <textarea rows={4} required value={form.messageBody} onChange={e => setForm({ ...form, messageBody: e.target.value })} placeholder="Write your message..." style={{ resize: 'vertical' }} />
+                            <label>{t.messages_page.message}</label>
+                            <textarea rows={4} required value={form.messageBody} onChange={e => setForm({ ...form, messageBody: e.target.value })} placeholder={`${t.messages_page.message}...`} style={{ resize: 'vertical' }} />
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <button type="submit" className="btn btn-primary"><Send size={16} /> Send</button>
-                            <button type="button" className="btn btn-outline" onClick={() => setShowCompose(false)}>Cancel</button>
+                            <button type="submit" className="btn btn-primary"><Send size={16} /> {t.messages_page.send}</button>
+                            <button type="button" className="btn btn-outline" onClick={() => setShowCompose(false)}>{t.messages_page.cancel}</button>
                         </div>
                     </form>
                 </div>

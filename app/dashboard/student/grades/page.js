@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { BookOpen, TrendingUp } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function StudentGrades() {
+    const { t } = useLanguage();
     const [grades, setGrades] = useState([]);
     const [term, setTerm] = useState('Term 1');
     const [loading, setLoading] = useState(true);
@@ -18,10 +20,10 @@ export default function StudentGrades() {
     const subjects = [...new Set(grades.map(g => g.subject))];
 
     return (
-        <div>
+        <div className="animate-fade-in">
             <div className="card" style={{ padding: '16px 20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <BookOpen size={20} color="#3b82f6" /> My Grades
+                    <BookOpen size={20} color="#3b82f6" /> {t.student_grades.title}
                 </h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '10px', background: `${avgGrade >= 80 ? '#22c55e' : avgGrade >= 60 ? '#f59e0b' : '#ef4444'}15` }}>
@@ -52,7 +54,7 @@ export default function StudentGrades() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                 <h4 style={{ fontSize: '0.95rem', fontWeight: 600 }}>{subj}</h4>
                                 <span className={`badge ${grade >= 80 ? 'badge-success' : grade >= 60 ? 'badge-warning' : 'badge-danger'}`}>
-                                    {grade >= 80 ? 'Excellent' : grade >= 60 ? 'Good' : 'Needs Work'}
+                                    {grade >= 80 ? t.student_dashboard.excellent : grade >= 60 ? t.student_dashboard.good : t.student_dashboard.needsWork}
                                 </span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '10px' }}>
@@ -63,7 +65,7 @@ export default function StudentGrades() {
                                 <div style={{ height: '100%', width: `${grade}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${color}, ${color}88)`, transition: 'width 1s ease' }} />
                             </div>
                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>
-                                {subjectGrades[0]?.remarks || 'No remarks'}
+                                {subjectGrades[0]?.remarks || '-'}
                             </p>
                         </div>
                     );
@@ -74,7 +76,7 @@ export default function StudentGrades() {
             <div className="card">
                 <div className="table-container">
                     <table>
-                        <thead><tr><th>Subject</th><th>Grade</th><th>Max</th><th>Term</th><th>Remarks</th></tr></thead>
+                        <thead><tr><th>{t.student_grades.subject}</th><th>{t.student_grades.grade}</th><th>Max</th><th>Term</th><th>{t.student_grades.remarks}</th></tr></thead>
                         <tbody>
                             {grades.map((g, i) => (
                                 <tr key={i}>

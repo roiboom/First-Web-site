@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
+import crypto from 'crypto';
 
 export async function GET(request) {
     const role = request.headers.get('x-user-role');
@@ -64,8 +65,8 @@ export async function POST(request) {
             counter++;
         }
 
-        // Auto-generate password
-        const password = `${baseName}${Math.floor(Math.random() * 900) + 100}`;
+        // Auto-generate password (Secure)
+        const password = crypto.randomBytes(6).toString('base64').replace(/[/+=]/g, 'X').slice(0, 10);
         const hashedPassword = hashPassword(password);
 
         // Generate student ID

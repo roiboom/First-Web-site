@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit3, Trash2, X, BookOpen } from 'lucide-react';
+import { Search, Plus, Edit3, Trash2, X, BookOpen, Download } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function AdminTeachers() {
+    const { t } = useLanguage();
     const [teachers, setTeachers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -50,43 +52,60 @@ export default function AdminTeachers() {
         fetchTeachers();
     };
 
+    if (loading) return <div className="loading-page"><div className="spinner" /></div>;
+
     return (
-        <div>
-            <div className="card" style={{ padding: '16px 20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <BookOpen size={20} color="#8b5cf6" /> Teacher Management
-                </h3>
-                <button className="btn btn-primary" onClick={openAdd}><Plus size={18} /> Add Teacher</button>
+        <div className="animate-fade-in">
+            <div style={styles.header}>
+                <div>
+                    <h1 style={styles.title}>{t.teachers_page.title}</h1>
+                    <p style={styles.subtitle}>{t.teachers_page.subtitle}</p>
+                </div>
+                <div style={styles.actions}>
+                    <button className="btn btn-outline">
+                        <Download size={18} /> {t.teachers_page.exportData}
+                    </button>
+                    <button className="btn btn-primary" onClick={openAdd}>
+                        <Plus size={18} /> {t.teachers_page.addTeacher}
+                    </button>
+                </div>
             </div>
 
             <div className="card">
                 <div className="table-container">
                     <table>
                         <thead>
-                            <tr><th>Teacher</th><th>ID</th><th>Username</th><th>Subject</th><th>Department</th><th>Actions</th></tr>
+                            <tr>
+                                <th>{t.teachers_page.tableTeacher}</th>
+                                <th>{t.dashboard.id}</th>
+                                <th>{t.login.username}</th>
+                                <th>{t.dashboard.subject}</th>
+                                <th>{t.teachers_page.tableDepartment}</th>
+                                <th style={{ textAlign: 'right' }}>{t.common.actions}</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            {teachers.map(t => (
-                                <tr key={t.teacher_id}>
+                            {teachers.map(teacher => (
+                                <tr key={teacher.teacher_id}>
                                     <td>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #8b5cf6, #a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.85rem' }}>
-                                                {t.full_name?.[0]}
+                                            <div style={styles.avatar}>
+                                                {teacher.full_name?.[0]}
                                             </div>
                                             <div>
-                                                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t.full_name}</div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t.email}</div>
+                                                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{teacher.full_name}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{teacher.email}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td><span className="badge badge-purple">{t.teacher_id}</span></td>
-                                    <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{t.username}</td>
-                                    <td>{t.subject}</td>
-                                    <td>{t.department}</td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: '6px' }}>
-                                            <button className="btn btn-outline btn-sm btn-icon" onClick={() => openEdit(t)}><Edit3 size={15} /></button>
-                                            <button className="btn btn-sm btn-icon" onClick={() => handleDelete(t.id)}
+                                    <td><span className="badge badge-purple">{teacher.teacher_id}</span></td>
+                                    <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{teacher.username}</td>
+                                    <td>{teacher.subject}</td>
+                                    <td>{teacher.department}</td>
+                                    <td style={{ textAlign: 'right' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                                            <button className="btn btn-outline btn-sm btn-icon" onClick={() => openEdit(teacher)} title={t.students_page.edit}><Edit3 size={15} /></button>
+                                            <button className="btn btn-sm btn-icon" onClick={() => handleDelete(teacher.id)} title="Delete"
                                                 style={{ background: 'var(--danger-50)', color: 'var(--danger-500)', border: '1px solid var(--danger-100)' }}>
                                                 <Trash2 size={15} />
                                             </button>
@@ -104,7 +123,7 @@ export default function AdminTeachers() {
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3>{editTeacher ? 'Edit Teacher' : 'Add New Teacher'}</h3>
+                            <h3>{editTeacher ? t.students_page.edit : t.teachers_page.addTeacher}</h3>
                             <button className="btn btn-icon btn-outline" onClick={() => setShowModal(false)}><X size={18} /></button>
                         </div>
                         {newCreds ? (
@@ -137,8 +156,8 @@ export default function AdminTeachers() {
                                     <div className="form-group"><label>Phone</label><input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
                                 </div>
                                 <div className="modal-footer">
-                                    <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button>
-                                    <button type="submit" className="btn btn-primary">{editTeacher ? 'Save Changes' : 'Create Teacher'}</button>
+                                    <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>{t.messages_page.cancel}</button>
+                                    <button type="submit" className="btn btn-primary">{editTeacher ? 'Save Changes' : t.teachers_page.addTeacher}</button>
                                 </div>
                             </form>
                         )}
@@ -148,3 +167,40 @@ export default function AdminTeachers() {
         </div>
     );
 }
+
+const styles = {
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '24px',
+        flexWrap: 'wrap',
+        gap: '16px',
+    },
+    title: {
+        fontSize: '1.5rem',
+        fontWeight: 700,
+        color: 'var(--text-primary)',
+        marginBottom: '4px',
+    },
+    subtitle: {
+        color: 'var(--text-muted)',
+        fontSize: '0.9rem',
+    },
+    actions: {
+        display: 'flex',
+        gap: '12px',
+    },
+    avatar: {
+        width: '36px',
+        height: '36px',
+        borderRadius: '10px',
+        background: 'linear-gradient(135deg, #8b5cf6, #a78bfa)',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 700,
+        fontSize: '0.85rem'
+    }
+};

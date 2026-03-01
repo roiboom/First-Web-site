@@ -13,6 +13,13 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // 2FA States
+    const [step, setStep] = useState('login'); // 'login', '2fa-setup', '2fa-verify'
+    const [tempToken, setTempToken] = useState('');
+    const [qrCode, setQrCode] = useState('');
+    const [setupSecret, setSetupSecret] = useState('');
+    const [twoFactorCode, setTwoFactorCode] = useState('');
+
     const roles = [
         { key: 'admin', label: 'Admin', icon: Shield, color: '#ef4444', demo: { user: 'admin', pass: 'admin123' } },
         { key: 'teacher', label: 'Teacher', icon: BookOpen, color: '#3b82f6', demo: { user: 'teacher1', pass: 'teacher123' } },
@@ -43,6 +50,55 @@ export default function LoginPage() {
             const data = await res.json();
             if (!res.ok) {
                 setError(data.error || 'Login failed');
+                setLoading(false);
+                return;
+            }
+
+            if (data.requires2FASetup) {
+                setTempToken(data.tempToken);
+                // Fetch QR code
+                const qrRes = await fetch(`/api/auth/setup-2fa?tempToken=${data.tempToken}`);
+                const qrData = await qrRes.json();
+                if (qrData.success) {
+                    setQrCode(qrData.qrCodeUrl);
+                    setSetupSecret(qrData.secret);
+                    setStep('2fa-setup');
+                } else {
+                    setError('Failed to load 2FA setup');
+                }
+                setLoading(false);
+            } else if (data.requires2FA) {
+                setTempToken(data.tempToken);
+                setStep('2fa-verify');
+                setLoading(false);
+            } else {
+                router.push(`/dashboard/${data.user.role}`);
+            }
+        } catch (err) {
+            setError('Network error. Please try again.');
+            setLoading(false);
+        }
+    };
+
+    const handleVerify2FA = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        try {
+            const res = await fetch('/api/auth/verify-2fa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tempToken,
+                    code: twoFactorCode,
+                    setupSecret: step === '2fa-setup' ? setupSecret : undefined
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                setError(data.error || 'Verification failed');
                 setLoading(false);
                 return;
             }
@@ -85,93 +141,184 @@ export default function LoginPage() {
                         </div>
                     </div>
                     <h1 style={styles.title}>Student Portal</h1>
-                    <p style={styles.subtitle}>Welcome back! Please sign in to continue.</p>
+                    <p style={styles.subtitle}>
+                        {step === '2fa-setup' ? 'Set up Two-Factor Authentication' :
+                            step === '2fa-verify' ? 'Two-Factor Authentication' :
+                                'Welcome back! Please sign in to continue.'}
+                    </p>
                 </div>
 
-                {/* Role Tabs */}
-                <div style={styles.roleTabs}>
-                    {roles.map(role => {
-                        const Icon = role.icon;
-                        const isActive = selectedRole === role.key;
-                        return (
+                {step === 'login' && (
+                    <>
+                        {/* Role Tabs */}
+                        <div style={styles.roleTabs}>
+                            {roles.map(role => {
+                                const Icon = role.icon;
+                                const isActive = selectedRole === role.key;
+                                return (
+                                    <button
+                                        key={role.key}
+                                        onClick={() => fillDemo(role.key)}
+                                        style={{
+                                            ...styles.roleTab,
+                                            ...(isActive ? {
+                                                background: `linear-gradient(135deg, ${role.color}22, ${role.color}11)`,
+                                                borderColor: role.color,
+                                                color: role.color,
+                                            } : {}),
+                                        }}
+                                    >
+                                        <Icon size={16} />
+                                        <span>{role.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Login Form */}
+                        <form onSubmit={handleSubmit} style={styles.form}>
+                            {error && (
+                                <div style={styles.errorBox}>
+                                    <span>⚠️</span> {error}
+                                </div>
+                            )}
+
+                            <div className="form-group">
+                                <label htmlFor="username">Username</label>
+                                <div style={styles.inputWrapper}>
+                                    <User size={18} style={styles.inputIcon} />
+                                    <input
+                                        id="username"
+                                        type="text"
+                                        placeholder="Enter your username"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        style={styles.inputWithIcon}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="password">Password</label>
+                                <div style={styles.inputWrapper}>
+                                    <Shield size={18} style={styles.inputIcon} />
+                                    <input
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        placeholder="Enter your password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        style={styles.inputWithIcon}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        style={styles.eyeBtn}
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+                            </div>
+
                             <button
-                                key={role.key}
-                                onClick={() => fillDemo(role.key)}
+                                type="submit"
+                                disabled={loading}
                                 style={{
-                                    ...styles.roleTab,
-                                    ...(isActive ? {
-                                        background: `linear-gradient(135deg, ${role.color}22, ${role.color}11)`,
-                                        borderColor: role.color,
-                                        color: role.color,
-                                    } : {}),
+                                    ...styles.submitBtn,
+                                    opacity: loading ? 0.7 : 1,
                                 }}
                             >
-                                <Icon size={16} />
-                                <span>{role.label}</span>
+                                {loading ? <Loader2 size={20} className="spin" style={{ animation: 'spin 0.6s linear infinite' }} /> : <LogIn size={20} />}
+                                {loading ? 'Signing in...' : 'Sign In'}
                             </button>
-                        );
-                    })}
-                </div>
+                        </form>
+                    </>
+                )}
 
-                {/* Login Form */}
-                <form onSubmit={handleSubmit} style={styles.form}>
-                    {error && (
-                        <div style={styles.errorBox}>
-                            <span>⚠️</span> {error}
+                {step === '2fa-setup' && (
+                    <div style={styles.form}>
+                        <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#64748b', marginBottom: '16px' }}>
+                            Scan this QR code with Google Authenticator or a similar app.
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px', background: 'white', padding: '10px', borderRadius: '12px' }}>
+                            {qrCode ? <img src={qrCode} alt="2FA QR Code" style={{ width: '180px', height: '180px' }} /> : <div style={{ width: '180px', height: '180px', background: '#f1f5f9' }} />}
                         </div>
-                    )}
-
-                    <div className="form-group">
-                        <label htmlFor="username">Username</label>
-                        <div style={styles.inputWrapper}>
-                            <User size={18} style={styles.inputIcon} />
-                            <input
-                                id="username"
-                                type="text"
-                                placeholder="Enter your username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                style={styles.inputWithIcon}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <div style={styles.inputWrapper}>
-                            <Shield size={18} style={styles.inputIcon} />
-                            <input
-                                id="password"
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder="Enter your password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                style={styles.inputWithIcon}
-                                required
-                            />
+                        <form onSubmit={handleVerify2FA}>
+                            {error && (
+                                <div style={styles.errorBox}>
+                                    <span>⚠️</span> {error}
+                                </div>
+                            )}
+                            <div className="form-group">
+                                <label htmlFor="code">Verification Code</label>
+                                <input
+                                    id="code"
+                                    type="text"
+                                    placeholder="Enter 6-digit code"
+                                    value={twoFactorCode}
+                                    onChange={(e) => setTwoFactorCode(e.target.value)}
+                                    maxLength={6}
+                                    style={{ textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem', fontWeight: 'bold' }}
+                                    required
+                                />
+                            </div>
                             <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                style={styles.eyeBtn}
+                                type="submit"
+                                disabled={loading}
+                                style={{
+                                    ...styles.submitBtn,
+                                    opacity: loading ? 0.7 : 1,
+                                    marginTop: '16px'
+                                }}
                             >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                {loading ? <Loader2 size={20} className="spin" style={{ animation: 'spin 0.6s linear infinite' }} /> : <Shield size={20} />}
+                                {loading ? 'Verifying...' : 'Verify & Complete Setup'}
                             </button>
-                        </div>
+                        </form>
                     </div>
+                )}
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                            ...styles.submitBtn,
-                            opacity: loading ? 0.7 : 1,
-                        }}
-                    >
-                        {loading ? <Loader2 size={20} className="spin" style={{ animation: 'spin 0.6s linear infinite' }} /> : <LogIn size={20} />}
-                        {loading ? 'Signing in...' : 'Sign In'}
-                    </button>
-                </form>
+                {step === '2fa-verify' && (
+                    <div style={styles.form}>
+                        <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#64748b', marginBottom: '20px' }}>
+                            Enter the 6-digit code from your authenticator app.
+                        </p>
+                        <form onSubmit={handleVerify2FA}>
+                            {error && (
+                                <div style={styles.errorBox}>
+                                    <span>⚠️</span> {error}
+                                </div>
+                            )}
+                            <div className="form-group">
+                                <label htmlFor="code">Authentication Code</label>
+                                <input
+                                    id="code"
+                                    type="text"
+                                    placeholder="000000"
+                                    value={twoFactorCode}
+                                    onChange={(e) => setTwoFactorCode(e.target.value)}
+                                    maxLength={6}
+                                    style={{ textAlign: 'center', letterSpacing: '8px', fontSize: '1.5rem', fontWeight: 'bold' }}
+                                    required
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                style={{
+                                    ...styles.submitBtn,
+                                    opacity: loading ? 0.7 : 1,
+                                    marginTop: '24px'
+                                }}
+                            >
+                                {loading ? <Loader2 size={20} className="spin" style={{ animation: 'spin 0.6s linear infinite' }} /> : <Shield size={20} />}
+                                {loading ? 'Verifying...' : 'Authenticate'}
+                            </button>
+                        </form>
+                    </div>
+                )}
 
 
             </div>

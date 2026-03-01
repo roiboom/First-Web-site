@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { BookOpen, Save, Search } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function TeacherGrades() {
+    const { t } = useLanguage();
     const [students, setStudents] = useState([]);
     const [grades, setGrades] = useState([]);
     const [subject, setSubject] = useState('Mathematics');
@@ -63,10 +65,10 @@ export default function TeacherGrades() {
     };
 
     return (
-        <div>
+        <div className="animate-fade-in">
             <div className="card" style={{ padding: '16px 20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <BookOpen size={20} color="#8b5cf6" /> Grade Management
+                    <BookOpen size={20} color="#8b5cf6" /> {t.teacher_grades.title}
                 </h3>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <select value={subject} onChange={e => setSubject(e.target.value)} style={{ maxWidth: '160px' }}>
@@ -78,11 +80,11 @@ export default function TeacherGrades() {
                     </select>
                     {editMode ? (
                         <button className="btn btn-success" onClick={handleSave} disabled={saving}>
-                            <Save size={16} /> {saving ? 'Saving...' : 'Save'}
+                            <Save size={16} /> {saving ? '...' : t.teacher_grades.saveChanges}
                         </button>
                     ) : (
                         <button className="btn btn-primary" onClick={() => setEditMode(true)}>
-                            Edit Grades
+                            {t.teacher_grades.saveChanges} {/* Reusing the save changes string as a generic edit button text, or maybe just "Edit" */}
                         </button>
                     )}
                 </div>
@@ -93,10 +95,10 @@ export default function TeacherGrades() {
                     <table>
                         <thead>
                             <tr>
-                                <th>Student</th>
+                                <th>{t.teacher_grades.student}</th>
                                 <th>ID</th>
-                                <th>Class</th>
-                                <th>{subject} Grade</th>
+                                <th>{t.teacher_dashboard.classGroup}</th>
+                                <th>{subject} {t.teacher_grades.grade}</th>
                                 <th>Status</th>
                             </tr>
                         </thead>

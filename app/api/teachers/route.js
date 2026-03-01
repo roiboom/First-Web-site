@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
+import crypto from 'crypto';
 
 export async function GET(request) {
     const role = request.headers.get('x-user-role');
@@ -46,7 +47,7 @@ export async function POST(request) {
             counter++;
         }
 
-        const password = `${baseName}${Math.floor(Math.random() * 900) + 100}`;
+        const password = crypto.randomBytes(6).toString('base64').replace(/[/+=]/g, 'Y').slice(0, 10);
         const hashedPassword = hashPassword(password);
 
         const lastTeacher = db.prepare('SELECT teacher_id FROM teachers ORDER BY id DESC LIMIT 1').get();

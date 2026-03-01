@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Send, MessageSquare, Users, GraduationCap, Layers } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function AdminMessages() {
+    const { t } = useLanguage();
     const [messages, setMessages] = useState([]);
     const [students, setStudents] = useState([]);
     const [teachers, setTeachers] = useState([]);
@@ -69,13 +71,13 @@ export default function AdminMessages() {
     const uniqueClasses = [...new Set(students.map(s => s.class_name))];
 
     return (
-        <div>
+        <div className="animate-fade-in">
             <div className="card" style={{ padding: '16px 20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <MessageSquare size={20} color="#3b82f6" /> Messages & Announcements
+                    <MessageSquare size={20} color="#3b82f6" /> {t.messages_page.title}
                 </h3>
                 <button className="btn btn-primary" onClick={() => setShowCompose(!showCompose)}>
-                    <Send size={18} /> Compose
+                    <Send size={18} /> {t.messages_page.newMessage}
                 </button>
             </div>
 
@@ -84,25 +86,25 @@ export default function AdminMessages() {
                     <form onSubmit={handleSend}>
 
                         <div className="form-group" style={{ marginBottom: '20px' }}>
-                            <label>Send To</label>
+                            <label>{t.messages_page.to}</label>
                             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                                <button type="button" className={`btn ${targetType === 'all_students' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setTargetType('all_students')}>All Students</button>
-                                <button type="button" className={`btn ${targetType === 'all_teachers' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setTargetType('all_teachers')}>All Teachers</button>
-                                <button type="button" className={`btn ${targetType === 'custom' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setTargetType('custom')}>Custom Selection</button>
+                                <button type="button" className={`btn ${targetType === 'all_students' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setTargetType('all_students')}>{t.students_page.allClasses}</button>
+                                <button type="button" className={`btn ${targetType === 'all_teachers' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setTargetType('all_teachers')}>{t.teachers_page.allDepartments}</button>
+                                <button type="button" className={`btn ${targetType === 'custom' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setTargetType('custom')}>{t.messages_page.selectRecipients}</button>
                             </div>
 
                             {targetType === 'custom' && (
                                 <div style={{ padding: '16px', background: 'var(--bg-hover)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                                    <p style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '12px' }}>Select Recipients:</p>
+                                    <p style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '12px' }}>{t.messages_page.selectRecipients}</p>
                                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                                         <button type="button" className="btn btn-outline" onClick={() => setActiveModal('teachers')}>
-                                            <GraduationCap size={16} /> Choose Teachers ({selectedTeachers.length})
+                                            <GraduationCap size={16} /> {t.common.teachers} ({selectedTeachers.length})
                                         </button>
                                         <button type="button" className="btn btn-outline" onClick={() => setActiveModal('students')}>
-                                            <Users size={16} /> Choose Students ({selectedStudents.length})
+                                            <Users size={16} /> {t.common.students} ({selectedStudents.length})
                                         </button>
                                         <button type="button" className="btn btn-outline" onClick={() => setActiveModal('classes')}>
-                                            <Layers size={16} /> Choose Classes ({selectedClasses.length})
+                                            <Layers size={16} /> {t.teachers_page.tableClasses} ({selectedClasses.length})
                                         </button>
                                     </div>
                                 </div>
@@ -110,16 +112,16 @@ export default function AdminMessages() {
                         </div>
 
                         <div className="form-group">
-                            <label>Subject</label>
-                            <input required value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} placeholder="Message subject" />
+                            <label>{t.messages_page.subject}</label>
+                            <input required value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} placeholder={t.messages_page.subject} />
                         </div>
                         <div className="form-group">
-                            <label>Message</label>
-                            <textarea rows={4} required value={form.messageBody} onChange={e => setForm({ ...form, messageBody: e.target.value })} placeholder="Type your message..." style={{ resize: 'vertical' }} />
+                            <label>{t.messages_page.message}</label>
+                            <textarea rows={4} required value={form.messageBody} onChange={e => setForm({ ...form, messageBody: e.target.value })} placeholder={`${t.messages_page.message}...`} style={{ resize: 'vertical' }} />
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <button type="submit" className="btn btn-primary"><Send size={16} /> Send Message</button>
-                            <button type="button" className="btn btn-outline" onClick={() => setShowCompose(false)}>Cancel</button>
+                            <button type="submit" className="btn btn-primary"><Send size={16} /> {t.messages_page.send}</button>
+                            <button type="button" className="btn btn-outline" onClick={() => setShowCompose(false)}>{t.messages_page.cancel}</button>
                         </div>
                     </form>
                 </div>
@@ -132,15 +134,15 @@ export default function AdminMessages() {
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', alignItems: 'center' }}>
                             <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>
-                                {activeModal === 'teachers' ? 'Choose Teachers' : activeModal === 'students' ? 'Choose Students' : 'Choose Classes'}
+                                {t.messages_page.selectRecipients}
                             </h3>
-                            <button className="btn btn-outline btn-sm" onClick={() => setActiveModal(null)}>Done</button>
+                            <button className="btn btn-outline btn-sm" onClick={() => setActiveModal(null)}>{t.messages_page.cancel}</button>
                         </div>
 
                         {activeModal === 'students' && (
                             <div className="form-group">
                                 <select value={studentClassFilter} onChange={e => setStudentClassFilter(e.target.value)} style={{ marginBottom: '16px' }}>
-                                    <option value="">All Classes</option>
+                                    <option value="">{t.students_page.allClasses}</option>
                                     {uniqueClasses.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
@@ -195,24 +197,13 @@ export default function AdminMessages() {
                             <div>
                                 <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>{msg.subject}</h4>
                                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                                    From: {msg.sender_name} • {new Date(msg.created_at).toLocaleDateString()}
+                                    {new Date(msg.created_at).toLocaleDateString()}
                                 </p>
                             </div>
-                            {msg.is_announcement ? (
-                                <span className="badge badge-primary">📢 Announcement</span>
-                            ) : (
-                                <span className="badge badge-success">Direct</span>
-                            )}
                         </div>
                         <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{msg.body}</p>
                     </div>
                 ))}
-                {messages.length === 0 && (
-                    <div className="card empty-state">
-                        <MessageSquare size={48} />
-                        <p>No messages yet</p>
-                    </div>
-                )}
             </div>
         </div>
     );

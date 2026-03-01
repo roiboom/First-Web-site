@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Users, BookOpen, ClipboardCheck, Calendar } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function TeacherDashboard() {
+    const { t } = useLanguage();
     const [students, setStudents] = useState([]);
     const [schedule, setSchedule] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -21,17 +23,20 @@ export default function TeacherDashboard() {
 
     if (loading) return <div className="loading-page"><div className="spinner" /></div>;
 
-    const today = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date().getDay()];
+    const todayIndex = new Date().getDay();
+    const daysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const today = daysEn[todayIndex];
     const todaySchedule = schedule.filter(s => s.day_of_week === today);
 
+    // Dynamic cards
     const cards = [
-        { label: 'My Students', value: students.length, icon: Users, color: '#3b82f6' },
-        { label: 'Today\'s Classes', value: todaySchedule.length, icon: Calendar, color: '#22c55e' },
-        { label: 'Total Subjects', value: [...new Set(schedule.map(s => s.subject))].length, icon: BookOpen, color: '#8b5cf6' },
+        { label: t.teacher_dashboard.myStudents, value: students.length, icon: Users, color: '#3b82f6' },
+        { label: t.teacher_dashboard.todaysClasses, value: todaySchedule.length, icon: Calendar, color: '#22c55e' },
+        { label: t.teacher_dashboard.totalSubjects, value: [...new Set(schedule.map(s => s.subject))].length, icon: BookOpen, color: '#8b5cf6' },
     ];
 
     return (
-        <div>
+        <div className="animate-fade-in">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '24px' }} className="stagger">
                 {cards.map((card, i) => {
                     const Icon = card.icon;
@@ -53,7 +58,7 @@ export default function TeacherDashboard() {
                 {/* Today's Schedule */}
                 <div className="card" style={{ padding: '24px' }}>
                     <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem', fontWeight: 700, marginBottom: '16px' }}>
-                        <Calendar size={20} color="#22c55e" /> Today&apos;s Schedule ({today})
+                        <Calendar size={20} color="#22c55e" /> {t.teacher_dashboard.todaysSchedule}
                     </h3>
                     {todaySchedule.length > 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -70,18 +75,18 @@ export default function TeacherDashboard() {
                             ))}
                         </div>
                     ) : (
-                        <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>No classes today</p>
+                        <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>{t.teacher_dashboard.noClassesToday}</p>
                     )}
                 </div>
 
                 {/* Student List */}
                 <div className="card" style={{ padding: '24px' }}>
                     <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem', fontWeight: 700, marginBottom: '16px' }}>
-                        <Users size={20} color="#3b82f6" /> My Students
+                        <Users size={20} color="#3b82f6" /> {t.teacher_dashboard.myStudents}
                     </h3>
                     <div className="table-container">
                         <table>
-                            <thead><tr><th>Name</th><th>ID</th><th>Class</th></tr></thead>
+                            <thead><tr><th>{t.teacher_dashboard.className}</th><th>{t.teacher_dashboard.classID}</th><th>{t.teacher_dashboard.classGroup}</th></tr></thead>
                             <tbody>
                                 {students.slice(0, 10).map(s => (
                                     <tr key={s.student_id}>

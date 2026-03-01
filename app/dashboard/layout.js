@@ -24,7 +24,7 @@ export default function DashboardLayout({ children }) {
 
     const [user, setUser] = useState(null);
     const [theme, setTheme] = useState('light');
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [mobileSidebar, setMobileSidebar] = useState(false);
     const [loading, setLoading] = useState(true);
     const [showLangMenu, setShowLangMenu] = useState(false);
@@ -110,25 +110,23 @@ export default function DashboardLayout({ children }) {
                         <div style={styles.overlay} onClick={() => setMobileSidebar(false)} />
                     )}
 
-                    <aside style={sidebarStyle}>
+                    <aside
+                        style={sidebarStyle}
+                        onMouseEnter={() => setSidebarOpen(true)}
+                        onMouseLeave={() => setSidebarOpen(false)}
+                    >
                         <div style={styles.sidebarHeader}>
-                            <div style={{ ...styles.sidebarLogo, justifyContent: sidebarOpen ? 'flex-start' : 'center' }}>
+                            <div style={{ ...styles.sidebarLogo, justifyContent: sidebarOpen ? 'flex-start' : 'center', width: '100%' }}>
                                 <div style={styles.logoMark}>
                                     <GraduationCap size={22} color="white" />
                                 </div>
                                 {sidebarOpen && (
-                                    <div>
+                                    <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
                                         <div style={styles.logoText}>Student Portal</div>
                                         <div style={styles.logoSubtext}>{t.common.academicSystem}</div>
                                     </div>
                                 )}
                             </div>
-                            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={styles.collapseBtn} className="hide-mobile">
-                                <ChevronLeft size={18} style={{
-                                    transform: (sidebarOpen ? 'none' : 'rotate(180deg)') + (dir === 'rtl' ? ' scaleX(-1)' : ''),
-                                    transition: 'transform 0.3s ease'
-                                }} />
-                            </button>
                         </div>
 
                         {sidebarOpen && (
@@ -182,9 +180,6 @@ export default function DashboardLayout({ children }) {
                     }}>
                         <header style={styles.header}>
                             <div style={styles.headerLeft}>
-                                <button onClick={() => setMobileSidebar(true)} style={styles.menuBtn} className="show-mobile">
-                                    <Menu size={22} />
-                                </button>
                                 <div>
                                     <h2 style={styles.pageTitle}>
                                         {currentNav.find(n => n.href === pathname)?.label || t.common.dashboard}

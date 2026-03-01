@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { ClipboardCheck, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function StudentAttendance() {
+    const { t } = useLanguage();
     const [attendance, setAttendance] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -23,17 +25,17 @@ export default function StudentAttendance() {
     const rate = total > 0 ? Math.round((totals.present / total) * 100) : 0;
 
     const statusConfig = {
-        present: { icon: CheckCircle2, color: '#22c55e', bg: '#dcfce7', label: 'Present' },
-        absent: { icon: XCircle, color: '#ef4444', bg: '#fee2e2', label: 'Absent' },
-        late: { icon: Clock, color: '#f59e0b', bg: '#fef3c7', label: 'Late' },
-        excused: { icon: AlertCircle, color: '#64748b', bg: '#f1f5f9', label: 'Excused' },
+        present: { icon: CheckCircle2, color: '#22c55e', bg: '#dcfce7', label: t.teacher_attendance.present },
+        absent: { icon: XCircle, color: '#ef4444', bg: '#fee2e2', label: t.teacher_attendance.absent },
+        late: { icon: Clock, color: '#f59e0b', bg: '#fef3c7', label: t.teacher_attendance.late },
+        excused: { icon: AlertCircle, color: '#64748b', bg: '#f1f5f9', label: t.teacher_attendance.excused },
     };
 
     return (
-        <div>
+        <div className="animate-fade-in">
             <div className="card" style={{ padding: '16px 20px', marginBottom: '20px' }}>
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <ClipboardCheck size={20} color="#22c55e" /> My Attendance
+                    <ClipboardCheck size={20} color="#22c55e" /> {t.student_attendance.title}
                 </h3>
             </div>
 
@@ -45,7 +47,7 @@ export default function StudentAttendance() {
                             {rate}%
                         </div>
                     </div>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Attendance Rate</p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Rate</p>
                 </div>
 
                 {Object.entries(totals).map(([status, count]) => {
@@ -69,17 +71,19 @@ export default function StudentAttendance() {
             <div className="card">
                 <div className="table-container">
                     <table>
-                        <thead><tr><th>Date</th><th>Day</th><th>Status</th></tr></thead>
+                        <thead><tr><th>{t.teacher_attendance.date}</th><th>Day</th><th>{t.student_grades.status}</th></tr></thead>
                         <tbody>
                             {attendance.slice(0, 30).map((a, i) => {
                                 const config = statusConfig[a.status];
                                 const Icon = config.icon;
                                 const dateObj = new Date(a.date + 'T00:00:00');
-                                const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
+                                const dayNameIndex = dateObj.getDay();
+                                const translatedDayName = [t.common.sunday, t.common.monday, t.common.tuesday, t.common.wednesday, t.common.thursday, t.common.friday, t.common.saturday][dayNameIndex];
+                                const shortTranslatedDayName = translatedDayName.substring(0, 3);
                                 return (
                                     <tr key={i}>
                                         <td style={{ fontWeight: 500 }}>{a.date}</td>
-                                        <td>{dayName}</td>
+                                        <td>{shortTranslatedDayName}</td>
                                         <td>
                                             <span className={`badge ${a.status === 'present' ? 'badge-success' : a.status === 'absent' ? 'badge-danger' : a.status === 'late' ? 'badge-warning' : 'badge-primary'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                                                 <Icon size={12} /> {config.label}

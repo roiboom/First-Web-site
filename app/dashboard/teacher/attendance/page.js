@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { ClipboardCheck, Save, Check, X as XIcon } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function TeacherAttendance() {
+    const { t } = useLanguage();
     const [students, setStudents] = useState([]);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [attendance, setAttendance] = useState({});
@@ -64,22 +66,30 @@ export default function TeacherAttendance() {
     const presentCount = filteredStudents.filter(s => attendance[s.id] === 'present').length;
     const absentCount = filteredStudents.filter(s => attendance[s.id] === 'absent').length;
 
+    // Helper mapped to english terms to matching translation keys
+    const translationMap = {
+        'present': t.teacher_attendance.present,
+        'absent': t.teacher_attendance.absent,
+        'late': t.teacher_attendance.late,
+        'excused': t.teacher_attendance.excused
+    };
+
     return (
-        <div>
+        <div className="animate-fade-in">
             <div className="card" style={{ padding: '16px 20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <ClipboardCheck size={20} color="#22c55e" /> Record Attendance
+                    <ClipboardCheck size={20} color="#22c55e" /> {t.teacher_attendance.recordAttendance}
                 </h3>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ maxWidth: '160px' }} />
                     <select value={classFilter} onChange={e => setClassFilter(e.target.value)} style={{ maxWidth: '130px' }}>
-                        <option value="">All Classes</option>
+                        <option value="">{t.students_page.allClasses}</option>
                         <option>Class A</option>
                         <option>Class B</option>
                     </select>
                     <button className="btn btn-success" onClick={handleSave} disabled={saving}>
                         {saved ? <Check size={16} /> : <Save size={16} />}
-                        {saving ? 'Saving...' : saved ? 'Saved!' : 'Save'}
+                        {saving ? '...' : saved ? '...' : t.teacher_grades.saveChanges}
                     </button>
                 </div>
             </div>
@@ -88,20 +98,20 @@ export default function TeacherAttendance() {
             <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
                 <div className="card" style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e' }} />
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Present: <strong>{presentCount}</strong></span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{t.teacher_attendance.present}: <strong>{presentCount}</strong></span>
                 </div>
                 <div className="card" style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Absent: <strong>{absentCount}</strong></span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{t.teacher_attendance.absent}: <strong>{absentCount}</strong></span>
                 </div>
-                <button className="btn btn-outline btn-sm" onClick={() => markAll('present')}>Mark All Present</button>
+                <button className="btn btn-outline btn-sm" onClick={() => markAll('present')}>{t.teacher_attendance.markAllPresent}</button>
             </div>
 
             <div className="card">
                 <div className="table-container">
                     <table>
                         <thead>
-                            <tr><th>Student</th><th>ID</th><th>Class</th><th>Status</th></tr>
+                            <tr><th>{t.teacher_grades.student}</th><th>ID</th><th>{t.teacher_dashboard.classGroup}</th><th>Status</th></tr>
                         </thead>
                         <tbody>
                             {filteredStudents.map(s => {
@@ -126,7 +136,7 @@ export default function TeacherAttendance() {
                                                             padding: '4px 10px',
                                                         }}
                                                     >
-                                                        {st}
+                                                        {translationMap[st]}
                                                     </button>
                                                 ))}
                                             </div>
