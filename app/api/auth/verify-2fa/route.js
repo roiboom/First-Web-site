@@ -2,7 +2,8 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { verifyToken, signToken } from '@/lib/auth';
-import { authenticator } from 'otplib';
+import pkg from 'otplib';
+const { authenticator } = pkg;
 
 export async function POST(request) {
     try {
