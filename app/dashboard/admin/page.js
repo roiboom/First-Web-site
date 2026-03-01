@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Users, GraduationCap, ClipboardCheck, TrendingUp, BookOpen, Calendar, UserPlus, BarChart3 } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function AdminDashboard() {
+    const { t } = useLanguage();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -17,10 +19,10 @@ export default function AdminDashboard() {
     if (loading) return <div className="loading-page"><div className="spinner" /></div>;
 
     const cards = [
-        { label: 'Total Students', value: stats?.totalStudents || 0, icon: Users, color: '#3b82f6', bg: 'linear-gradient(135deg, #dbeafe, #eff6ff)' },
-        { label: 'Total Teachers', value: stats?.totalTeachers || 0, icon: GraduationCap, color: '#8b5cf6', bg: 'linear-gradient(135deg, #ede9fe, #f5f3ff)' },
-        { label: 'Attendance Rate', value: `${stats?.attendanceRate || 0}%`, icon: ClipboardCheck, color: '#22c55e', bg: 'linear-gradient(135deg, #dcfce7, #f0fdf4)' },
-        { label: 'Average Grade', value: stats?.avgGrade || 0, icon: TrendingUp, color: '#f59e0b', bg: 'linear-gradient(135deg, #fef3c7, #fffbeb)' },
+        { label: t.dashboard.totalStudents, value: stats?.totalStudents || 0, icon: Users, color: '#3b82f6', bg: 'linear-gradient(135deg, #dbeafe, #eff6ff)' },
+        { label: t.dashboard.totalTeachers, value: stats?.totalTeachers || 0, icon: GraduationCap, color: '#8b5cf6', bg: 'linear-gradient(135deg, #ede9fe, #f5f3ff)' },
+        { label: t.dashboard.attendanceRate, value: `${stats?.attendanceRate || 0}%`, icon: ClipboardCheck, color: '#22c55e', bg: 'linear-gradient(135deg, #dcfce7, #f0fdf4)' },
+        { label: t.dashboard.averageGrade, value: stats?.avgGrade || 0, icon: TrendingUp, color: '#f59e0b', bg: 'linear-gradient(135deg, #fef3c7, #fffbeb)' },
     ];
 
     return (
@@ -54,16 +56,16 @@ export default function AdminDashboard() {
                 <div className="card" style={{ padding: '24px' }}>
                     <div style={styles.sectionHeader}>
                         <h3 style={styles.sectionTitle}>
-                            <UserPlus size={20} color="#3b82f6" /> Recent Students
+                            <UserPlus size={20} color="#3b82f6" /> {t.dashboard.recentStudents}
                         </h3>
                     </div>
                     <div className="table-container" style={{ marginTop: '16px' }}>
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>ID</th>
-                                    <th>Class</th>
+                                    <th>{t.dashboard.name}</th>
+                                    <th>{t.dashboard.id}</th>
+                                    <th>{t.dashboard.class}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -83,7 +85,7 @@ export default function AdminDashboard() {
                 <div className="card" style={{ padding: '24px' }}>
                     <div style={styles.sectionHeader}>
                         <h3 style={styles.sectionTitle}>
-                            <BarChart3 size={20} color="#8b5cf6" /> Grades by Subject
+                            <BarChart3 size={20} color="#8b5cf6" /> {t.dashboard.gradesBySubject}
                         </h3>
                     </div>
                     <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -94,7 +96,7 @@ export default function AdminDashboard() {
                                 <div key={i}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                                         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{g.subject}</span>
-                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Avg: {Math.round(g.avg)}</span>
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t.dashboard.avg}: {Math.round(g.avg)}</span>
                                     </div>
                                     <div style={styles.progressBg}>
                                         <div style={{ ...styles.progressFill, width: `${g.avg}%`, background: `linear-gradient(90deg, ${color}, ${color}aa)` }} />
@@ -109,17 +111,17 @@ export default function AdminDashboard() {
             {/* Quick Actions */}
             <div className="card" style={{ padding: '24px', marginTop: '24px' }}>
                 <h3 style={styles.sectionTitle}>
-                    <Calendar size={20} color="#22c55e" /> Quick Actions
+                    <Calendar size={20} color="#22c55e" /> {t.dashboard.quickActions}
                 </h3>
                 <div style={{ display: 'flex', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
                     <a href="/dashboard/admin/students" className="btn btn-primary">
-                        <UserPlus size={18} /> Add Student
+                        <UserPlus size={18} /> {t.dashboard.addStudent}
                     </a>
                     <a href="/dashboard/admin/teachers" className="btn btn-outline" style={{ color: '#8b5cf6', borderColor: '#8b5cf6' }}>
-                        <GraduationCap size={18} /> Manage Teachers
+                        <GraduationCap size={18} /> {t.dashboard.manageTeachers}
                     </a>
                     <a href="/dashboard/admin/messages" className="btn btn-outline" style={{ color: '#3b82f6', borderColor: '#3b82f6' }}>
-                        <BookOpen size={18} /> Send Announcement
+                        <BookOpen size={18} /> {t.dashboard.sendAnnouncement}
                     </a>
                 </div>
             </div>
